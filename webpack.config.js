@@ -1,9 +1,12 @@
 const path = require('path')
 const HtmlWebpackPlugin = require('html-webpack-plugin')
-const ESLintPlugin = require('eslint-webpack-plugin')
+const MiniCssExtractPlugin = require("mini-css-extract-plugin");
+const ESLintPlugin = require('eslint-webpack-plugin');
 const dotenv = require('dotenv');
 
 module.exports = (env,argv) =>{
+  const ROOT_PATH = path.resolve('./');
+  const DIST_PATH = path.resolve(ROOT_PATH, './dist');
   const mode = argv.mode;
   mode === 'production' ? dotenv.config({path: './.env'}) : dotenv.config({path: './dev.env'}) 
   return {
@@ -12,17 +15,18 @@ module.exports = (env,argv) =>{
     entry: './src/index.js',
     output: {
       filename: 'main.js',
-      path: path.resolve(__dirname, 'dist'),
+      path: DIST_PATH,
     },
     plugins: [
       new HtmlWebpackPlugin({
         template: './index.html',
       }),
       new ESLintPlugin(),
+      new MiniCssExtractPlugin()
     ],
     devServer: {
       static: {
-        directory: path.resolve(__dirname, 'dist'),
+        directory: DIST_PATH,
       },
       hot: true,
       port: 8080,
@@ -31,19 +35,11 @@ module.exports = (env,argv) =>{
       rules: [
         {
           test: /\.css$/,
-          use: ['style-loader', 'css-loader'],
+          use: [MiniCssExtractPlugin.loader, 'css-loader']
         },
         {
           test: /\.s[ac]ss/i,
-          use: [
-            'style-loader',
-            {
-              loader: 'css-loader',
-              options: {
-                sourceMap: true,
-              },
-            },
-          ],
+          use: [MiniCssExtractPlugin.loader, 'sass-loader']
         },
         {
           test: /\.(js)$/,
